@@ -332,9 +332,16 @@
     // Keep keyboard focus on the same book if it's still in the list.
     const row = Array.from(els.list.children).find((li) => li.dataset.id === book.id);
     const next = row && row.querySelector('.status-select');
-    if (next) next.focus();
-
-    announce(book.title + ' marked as ' + STATUS_LABEL[book.status] + '.');
+    if (next) {
+      next.focus();
+      announce(book.title + ' marked as ' + STATUS_LABEL[book.status] + '.');
+    } else {
+      // The book no longer matches the current filter or search, so its
+      // control is gone. Move focus somewhere sensible and say what happened.
+      els.heading.focus();
+      announce(book.title + ' marked as ' + STATUS_LABEL[book.status] +
+        ' and moved out of the current view.');
+    }
   }
 
   function onDeleteClick(event) {
