@@ -133,6 +133,20 @@
   /* ---------- Helpers ---------- */
   const clean = (value) => value.replace(/\s+/g, ' ').trim();
 
+  // Comparison key: trimmed, repeated spaces collapsed, Unicode-normalised
+  // (so "é" typed two different ways matches) and lower-cased.
+  const normalizeForCompare = (value) => clean(value).normalize('NFKC').toLowerCase();
+
+  // Returns the existing book with the same title AND author, or undefined.
+  // Works on whatever is in state.books, including data loaded from storage.
+  function findDuplicate(title, author) {
+    const t = normalizeForCompare(title);
+    const a = normalizeForCompare(author);
+    return state.books.find(
+      (b) => normalizeForCompare(b.title) === t && normalizeForCompare(b.author) === a
+    );
+  }
+
   function newId() {
     if (window.crypto && typeof window.crypto.randomUUID === 'function') {
       return window.crypto.randomUUID();
@@ -267,15 +281,24 @@
   }
 
   /* ---------- Form handling ---------- */
-  function setFieldError(input, errorEl, message) {
+  function setFieldError(input, errorEl, message, kind) {
     if (message) {
       input.setAttribute('aria-invalid', 'true');
       errorEl.textContent = message;
+      errorEl.dataset.kind = kind || 'required';
       errorEl.hidden = false;
     } else {
       input.removeAttribute('aria-invalid');
       errorEl.textContent = '';
+      delete errorEl.dataset.kind;
       errorEl.hidden = true;
+    }
+  }
+
+  // Editing either field makes a "duplicate" message stale, so clear it.
+  function clearDuplicateError() {
+    if (els.titleError.dataset.kind === 'duplicate') {
+      setFieldError(els.title, els.titleError, '');
     }
   }
 
@@ -290,6 +313,23 @@
 
     if (!title || !author) {
       (title ? els.author : els.title).focus();
+      return;
+    }
+
+    // Block duplicates before anything is added or saved. This runs
+    // synchronously against the live state, so rapid repeat submits are
+    // checked against the book the first submit just added.
+    const existing = findDuplicate(title, author);
+    if (existing) {
+      setFieldError(
+        els.title,
+        els.titleError,
+        '\u201C' + existing.title + '\u201D by ' + existing.author +
+          ' is already on your shelf (' + STATUS_LABEL[existing.status] + '). ' +
+          'Change the title or author to add a different book.',
+        'duplicate'
+      );
+      els.title.focus();
       return;
     }
 
@@ -411,7 +451,10 @@
 
   els.form.addEventListener('submit', addBook);
   els.title.addEventListener('input', () => setFieldError(els.title, els.titleError, ''));
-  els.author.addEventListener('input', () => setFieldError(els.author, els.authorError, ''));
+  els.author.addEventListener('input', () => {
+    setFieldError(els.author, els.authorError, '');
+    clearDuplicateError();
+  });
 
   els.search.addEventListener('input', onSearchInput);
   els.search.addEventListener('keydown', onSearchKeydown);
