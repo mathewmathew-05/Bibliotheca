@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Track the books you want to read, are reading, and have finished.">
+  <meta name="color-scheme" content="light dark">
+  <title>Book Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to main content</a>
+
+  <header class="site-header">
+    <div class="container">
+      <h1>Book Tracker</h1>
+      <p class="tagline">Keep track of what you want to read, what you're reading, and what you've finished.</p>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    <p id="storage-warning" class="banner" role="alert" hidden>
+      Your changes can't be saved in this browser, so they'll be lost when you close or refresh the page.
+    </p>
+
+    <!-- Add a book -->
+    <section class="panel" aria-labelledby="add-heading">
+      <h2 id="add-heading">Add a book</h2>
+      <form id="book-form" novalidate>
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" name="title" type="text" maxlength="150" autocomplete="off"
+                 required aria-describedby="title-error">
+          <p id="title-error" class="error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="author">Author</label>
+          <input id="author" name="author" type="text" maxlength="100" autocomplete="off"
+                 required aria-describedby="author-error">
+          <p id="author-error" class="error" hidden></p>
+        </div>
+
+        <div class="field">
+          <label for="status">Status</label>
+          <select id="status" name="status"></select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add book</button>
+      </form>
+    </section>
+
+    <!-- Status counts (also act as filters) -->
+    <section aria-labelledby="summary-heading">
+      <h2 id="summary-heading" class="visually-hidden">Reading summary</h2>
+      <div class="stats" role="group" aria-label="Filter books by status">
+        <button type="button" class="stat" data-filter="all" aria-pressed="true">
+          <span class="stat-count" data-count="all">0</span>
+          <span class="stat-label">All books</span>
+        </button>
+        <button type="button" class="stat" data-filter="to-read" data-status="to-read" aria-pressed="false">
+          <span class="stat-count" data-count="to-read">0</span>
+          <span class="stat-label">To read</span>
+        </button>
+        <button type="button" class="stat" data-filter="reading" data-status="reading" aria-pressed="false">
+          <span class="stat-count" data-count="reading">0</span>
+          <span class="stat-label">Reading</span>
+        </button>
+        <button type="button" class="stat" data-filter="finished" data-status="finished" aria-pressed="false">
+          <span class="stat-count" data-count="finished">0</span>
+          <span class="stat-label">Finished</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Library -->
+    <section class="library" aria-labelledby="library-heading">
+      <div class="library-head">
+        <h2 id="library-heading" tabindex="-1">Your books</h2>
+        <p id="result-summary" class="muted" role="status"></p>
+      </div>
+
+      <div class="field search">
+        <label for="search">Search by title or author</label>
+        <input id="search" type="search" autocomplete="off" placeholder="Try a title or an author's name">
+      </div>
+
+      <ul id="book-list" class="book-list"></ul>
+
+      <div id="empty-state" class="empty" hidden>
+        <h3 id="empty-title"></h3>
+        <p id="empty-text" class="muted"></p>
+        <button type="button" id="empty-reset" class="btn btn-secondary" hidden>Clear search and filter</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Screen-reader announcements for actions (add, update, delete) -->
+  <p id="status-message" class="visually-hidden" role="status" aria-live="polite"></p>
+
+  <template id="book-template">
+    <li class="book">
+      <div class="book-info">
+        <h3 class="book-title"></h3>
+        <p class="book-author"></p>
+      </div>
+      <div class="book-actions">
+        <select class="status-select"></select>
+        <button type="button" class="btn btn-danger delete-btn">Delete</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
