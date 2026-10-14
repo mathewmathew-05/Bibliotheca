@@ -28,6 +28,8 @@
     emptyTitle: $('#empty-title'),
     emptyText: $('#empty-text'),
     emptyReset: $('#empty-reset'),
+    emptyAdd: $('#empty-add'),
+    searchClear: $('#search-clear'),
     summary: $('#result-summary'),
     heading: $('#library-heading'),
     message: $('#status-message'),
@@ -192,6 +194,8 @@
 
     item.querySelector('.book-title').textContent = book.title;
     item.querySelector('.book-author').textContent = 'by ' + book.author;
+    item.querySelector('.book-cover').textContent = book.title.charAt(0).toUpperCase();
+    item.querySelector('.badge').textContent = STATUS_LABEL[book.status];
 
     const select = item.querySelector('.status-select');
     populateStatusOptions(select);
@@ -220,6 +224,8 @@
     const isEmpty = visible.length === 0;
     els.list.hidden = isEmpty;
     els.empty.hidden = !isEmpty;
+    els.searchClear.hidden = els.search.value === '';
+    els.emptyAdd.hidden = hasBooks;
 
     if (isEmpty) {
       const hasQuery = state.query !== '';
@@ -229,7 +235,7 @@
 
       if (!hasBooks) {
         els.emptyTitle.textContent = 'Your shelf is empty';
-        els.emptyText.textContent = 'Add your first book using the form above.';
+        els.emptyText.textContent = 'Add a title and author to start tracking what you read.';
         els.emptyReset.hidden = true;
       } else if (hasQuery && hasFilter) {
         els.emptyTitle.textContent = 'No \u201C' + filterLabel + '\u201D books match ' + quoted;
@@ -381,6 +387,13 @@
     render();
   }
 
+  function clearSearch() {
+    els.search.value = '';
+    state.query = '';
+    render();
+    els.search.focus();
+  }
+
   function resetSearchAndFilter() {
     state.query = '';
     state.filter = 'all';
@@ -404,6 +417,8 @@
   els.search.addEventListener('keydown', onSearchKeydown);
   els.filters.forEach((btn) => btn.addEventListener('click', onFilterClick));
   els.emptyReset.addEventListener('click', resetSearchAndFilter);
+  els.emptyAdd.addEventListener('click', () => els.title.focus());
+  els.searchClear.addEventListener('click', clearSearch);
 
   els.list.addEventListener('change', onStatusChange);
   els.list.addEventListener('click', onDeleteClick);
